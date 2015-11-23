@@ -23,8 +23,12 @@ namespace Practica4DSCC
     public partial class Program
     {
         //Objetos de interface gráfica GLIDE
-        private GHI.Glide.Display.Window iniciarWindow;
+        private GHI.Glide.Display.Window iniciarWindow, temperatureWindow;
         private Button btn_inicio;
+        private GT.Timer timer;
+        private TextBlock text,tmp;
+        private static String temperature;
+        private ProgressBar progressBar;
 
         // This method is run when the mainboard is powered up or reset.   
         void ProgramStarted()
@@ -46,21 +50,89 @@ namespace Practica4DSCC
             // Use Debug.Print to show messages in Visual Studio's "Output" window during debugging.
             Debug.Print("Program Started");
 
+
+            startService();
+            ethernetJ11D.NetworkDown += ethernetJ11D_NetworkDown;
+            ethernetJ11D.NetworkUp += ethernetJ11D_NetworkUp;
+            timer = new GT.Timer(20000);
+            timer.Tick += new GT.Timer.TickEventHandler(timer_Tick);
             //Carga la ventana principal
             iniciarWindow = GlideLoader.LoadWindow(Resources.GetString(Resources.StringResources.inicioWindow));
+            temperatureWindow = GlideLoader.LoadWindow(Resources.GetString(Resources.StringResources.temperatureWindow));
+            progressBar = (ProgressBar)temperatureWindow.GetChildByName("progress");
             GlideTouch.Initialize();
-
+            text = (TextBlock)iniciarWindow.GetChildByName("text_net_status");
+            tmp = (TextBlock)temperatureWindow.GetChildByName("viewTemperature");
             //Inicializa el boton en la interface
             btn_inicio = (Button)iniciarWindow.GetChildByName("button_iniciar");
             btn_inicio.TapEvent += btn_inicio_TapEvent;
+            btn_inicio.Enabled = false;
 
             //Selecciona iniciarWindow como la ventana de inicio
             Glide.MainWindow = iniciarWindow;
+            
         }
+
+        void ethernetJ11D_NetworkUp(GTM.Module.NetworkModule sender, GTM.Module.NetworkModule.NetworkState state)
+        {
+            btn_inicio.Enabled = true;
+            text.Text = ethernetJ11D.NetworkInterface.IPAddress;
+            Glide.MainWindow = iniciarWindow;
+            Debug.Print("Internet Up");
+            timer.Start();
+            
+        }
+
+        void ethernetJ11D_NetworkDown(GTM.Module.NetworkModule sender, GTM.Module.NetworkModule.NetworkState state)
+        {
+            text.Text = "Network OFF";
+            Glide.MainWindow = iniciarWindow;
+            Debug.Print("No Internet");
+            timer.Stop();
+        }
+
+
+        private void timer_Tick(GT.Timer timer)
+        {
+            HttpRequest request = HttpHelper.CreateHttpGetRequest("http://api.thingspeak.com/channels/46434/fields/2/last");
+            request.ResponseReceived += request_ResponseReceived;
+            request.SendRequest();
+        }
+
+        void request_ResponseReceived(HttpRequest sender, HttpResponse response)
+        {
+
+            temperature = response.Text;
+            //progressBar.Value =
+            tmp.Text = response.Text;
+
+            Glide.MainWindow = temperatureWindow;
+            
+        }
+
 
         void btn_inicio_TapEvent(object sender)
         {
+            if (temperature==null)
+            {
+                tmp.Text = "0";
+            }
+            else
+            {
+                tmp.Text = temperature;
+            }
+            Glide.MainWindow = temperatureWindow;
             Debug.Print("Iniciar");
         }
+        void startService()
+        {
+            ethernetJ11D.NetworkInterface.Open();
+            ethernetJ11D.NetworkInterface.EnableDhcp();
+            ethernetJ11D.UseThisNetworkInterface();
+            Debug.Print(ethernetJ11D.NetworkInterface.IPAddress);
+            
+
+        }
+    
     }
 }
