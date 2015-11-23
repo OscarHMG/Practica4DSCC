@@ -137,7 +137,7 @@
     <value>&lt;Glide Version="1.0.7"&gt;
   &lt;Window Name="instance115" Width="320" Height="240" BackColor="FFFFFF"&gt;
     &lt;TextBlock Name="viewTemperature" X="116" Y="30" Width="100" Height="32" Alpha="255" Text="TextBlock" TextAlign="Left" TextVerticalAlign="Top" Font="4" FontColor="0" BackColor="000000" ShowBackColor="False"/&gt;
-    &lt;ProgressBar Name="progress" X="105" Y="85" Width="80" Height="16" Alpha="255" Direction="Up" MaxValue="100" Value="0"/&gt;
+    &lt;ProgressBar Name="progress" X="105" Y="85" Width="80" Height="16" Alpha="255" Direction="Right" MaxValue="100" Value="0"/&gt;
   &lt;/Window&gt;
 &lt;/Glide&gt;</value>
     <comment>Windows with progressBar</comment>

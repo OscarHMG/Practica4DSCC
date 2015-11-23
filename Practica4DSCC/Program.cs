@@ -103,11 +103,25 @@ namespace Practica4DSCC
         {
 
             temperature = response.Text;
-            //progressBar.Value =
+            double temporal = double.Parse(response.Text);
+            progressBar.Value = (int)(temporal);
+     
             tmp.Text = response.Text;
-
-            Glide.MainWindow = temperatureWindow;
+            changeColor(temporal);
             
+            
+        }
+
+        private void changeColor(double temporal)
+        {
+            if(temporal > 40){
+                temperatureWindow.BackColor = ColorUtility.ColorFromRGB(12, 250, 16); 
+            }
+            else
+            {
+                temperatureWindow.BackColor = ColorUtility.ColorFromRGB(250,15,16);
+            }
+            Glide.MainWindow = temperatureWindow;
         }
 
 
